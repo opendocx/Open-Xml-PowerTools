@@ -74,6 +74,9 @@ namespace OpenXmlPowerTools
             // do the actual content replacement
             xDocRoot = (XElement)ContentReplacementTransform(xDocRoot, data, te);
 
+            // if any DocumentBuilder Insert elements were placed at run-level, promote them to block-level
+            xDocRoot = (XElement)FixDocBuilderInserts(xDocRoot, te);
+
             xDoc.Elements().First().ReplaceWith(xDocRoot);
             part.PutXDocument();
             return;
@@ -133,6 +136,56 @@ namespace OpenXmlPowerTools
                 return new XElement(element.Name,
                     element.Attributes(),
                     element.Nodes().Select(n => ForceBlockLevelAsAppropriate(n, te)));
+            }
+            return node;
+        }
+
+        private static object FixDocBuilderInserts(XNode node, TemplateError te)
+        {
+            XElement element = node as XElement;
+            if (element != null)
+            {
+                if (element.Name == W.p)
+                {
+                    var childMeta = element.Elements().Where(n => n.Name == PtOpenXml.Insert);
+                    var count = childMeta.Count();
+                    if (count > 0)
+                    {
+                        var pAt = element.Attributes();
+                        var pPr = element.Elements(W.pPr).FirstOrDefault();
+                        XElement p = null;
+                        List<XElement> list = new List<XElement>();
+                        foreach (var elem in element.Elements().Where(e => e.Name != W.pPr))
+                        {
+                            if (elem.Name == PtOpenXml.Insert)
+                            {
+                                if (p != null)
+                                {
+                                    list.Add(p);
+                                    p = null;
+                                }
+                                list.Add(elem);
+                            }
+                            else
+                            { // non-insert content
+                                if (p == null)
+                                {
+                                    p = new XElement(W.p, pAt, pPr);
+                                }
+                                p.Add(new XElement(elem.Name, elem.Attributes(), elem.Nodes().Select(n => FixDocBuilderInserts(n, te))));
+                            }
+                        }
+                        if (p != null)
+                        {
+                            list.Add(p);
+                            p = null;
+                        }
+                        return list;
+                    }
+                }
+                return new XElement(element.Name,
+                    element.Attributes(),
+                    element.Nodes().Select(n => FixDocBuilderInserts(n, te)));
             }
             return node;
         }
@@ -614,7 +667,12 @@ namespace OpenXmlPowerTools
                         return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
                     }
 
-                    if (para != null)
+                    if (newValue.StartsWith("{DocumentBuilder:Insert{") && newValue.EndsWith("}}")) // check for Insert ID (for DocumentBuilder)
+                    {
+                        return new XElement(PtOpenXml.Insert,
+                            new XAttribute("Id", newValue.Substring(2, newValue.Length - 4)));
+                    }
+                    else if (para != null)
                     {
 
                         XElement p = new XElement(W.p, para.Elements(W.pPr));
