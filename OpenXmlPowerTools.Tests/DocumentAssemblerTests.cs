@@ -116,7 +116,8 @@ namespace OxPt
         [InlineData("DA264-InvalidRunLevelRepeat.docx", "DA-Data.xml", true)]
         [InlineData("DA265-RunLevelRepeatWithWhiteSpaceBefore.docx", "DA-Data.xml", false)]
         [InlineData("DA266-RunLevelRepeat-NoData.docx", "DA-Data.xml", true)]
-        
+        [InlineData("DA268-Block-Conditional-In-Table-Cell.docx", "DA268-data.xml", false)]
+
         public void DA101(string name, string data, bool err)
         {
             DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
@@ -234,6 +235,108 @@ namespace OxPt
 
             Assert.Equal(err, returnedTemplateError);
         }
+
+        [Theory]
+        [InlineData("DA267-xmlerror.docx", "DA267-xmlerror.xml", false)]
+        public void DA267_XmlError(string name, string data, bool err)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
+            FileInfo templateDocx = new FileInfo(Path.Combine(sourceDir.FullName, name));
+            FileInfo dataFile = new FileInfo(Path.Combine(sourceDir.FullName, data));
+
+            WmlDocument wmlTemplate = new WmlDocument(templateDocx.FullName);
+            XmlDocument xmldata = new XmlDocument();
+            xmldata.Load(dataFile.FullName);
+
+            bool returnedTemplateError;
+            WmlDocument afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmldata, out returnedTemplateError);
+            var assembledDocx = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, templateDocx.Name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
+            afterAssembling.SaveAs(assembledDocx.FullName);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.Write(afterAssembling.DocumentByteArray, 0, afterAssembling.DocumentByteArray.Length);
+                using (WordprocessingDocument wDoc = WordprocessingDocument.Open(ms, true))
+                {
+                    OpenXmlValidator v = new OpenXmlValidator();
+                    var valErrors = v.Validate(wDoc).Where(ve => !s_ExpectedErrors.Contains(ve.Description));
+                    Assert.Empty(valErrors);
+                }
+            }
+
+            Assert.Equal(err, returnedTemplateError);
+        }
+
+        //private static bool AllCellsHaveParagraphs(WordprocessingDocument wordDoc)
+        //{
+        //    foreach (var part in wordDoc.ContentParts())
+        //    {
+        //        CellsInPartHaveParagraphs(part);
+        //    }
+
+        //}
+
+        //private static void CellsInPartHaveParagraphs(OpenXmlPart part)
+        //{
+        //    XDocument xDoc = part.GetXDocument();
+
+        //    var xDocRoot = RemoveGoBackBookmarks();
+
+        //    // content controls in cells can surround the W.tc element, so transform so that such content controls are within the cell content
+        //    xDocRoot = (XElement)NormalizeContentControlsInCells(xDoc.Root);
+
+        //}
+
+        //private static bool NodeCellsHaveParagraphs(XNode node)
+        //{
+        //    XElement element = node as XElement;
+        //    if (element != null)
+        //    {
+        //        if (element.Name == W.tc)
+        //        {
+        //            element.Elem
+        //            var childMeta = element.Elements().Where(n => n.Name == PtOpenXml.Insert);
+        //            var count = childMeta.Count();
+        //            if (count > 0)
+        //            {
+        //                var pAt = element.Attributes();
+        //                var pPr = element.Elements(W.pPr).FirstOrDefault();
+        //                XElement p = null;
+        //                List<XElement> list = new List<XElement>();
+        //                foreach (var elem in element.Elements().Where(e => e.Name != W.pPr))
+        //                {
+        //                    if (elem.Name == PtOpenXml.Insert)
+        //                    {
+        //                        if (p != null)
+        //                        {
+        //                            list.Add(p);
+        //                            p = null;
+        //                        }
+        //                        list.Add(elem);
+        //                    }
+        //                    else
+        //                    { // non-insert content
+        //                        if (p == null)
+        //                        {
+        //                            p = new XElement(W.p, pAt, pPr);
+        //                        }
+        //                        p.Add(new XElement(elem.Name, elem.Attributes(), elem.Nodes().Select(n => FixDocBuilderInserts(n, te))));
+        //                    }
+        //                }
+        //                if (p != null)
+        //                {
+        //                    list.Add(p);
+        //                    p = null;
+        //                }
+        //                return list;
+        //            }
+        //        }
+        //        return new XElement(element.Name,
+        //            element.Attributes(),
+        //            element.Nodes().Select(n => FixDocBuilderInserts(n, te)));
+        //    }
+        //    return node;
+        //}
 
         private static List<string> s_ExpectedErrors = new List<string>()
         {
