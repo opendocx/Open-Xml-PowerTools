@@ -237,9 +237,15 @@ namespace OxPt
         }
 
         [Theory]
-        [InlineData("DA267-xmlerror.docx", "DA267-xmlerror.xml", false)]
-        public void DA267_XmlError(string name, string data, bool err)
+        [InlineData("DA267-xmlerror.docx", "DA267-xmlerror.xml", true)]
+        public void DA267_XmlError(string name, string data, bool expectError)
         {
+            // this test docx template is invalid -- the footer, which contains fields with markup,
+            // is itself wrapped in an invisible content control that should not be there.
+            // Since that invisible outer content control contains formatted text and other content controls,
+            // instead of containing actual XML, an error is thrown when we try to parse that content as xml.
+            // This XML error is embedded in a run where the error occurred.
+
             DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
             FileInfo templateDocx = new FileInfo(Path.Combine(sourceDir.FullName, name));
             FileInfo dataFile = new FileInfo(Path.Combine(sourceDir.FullName, data));
@@ -264,7 +270,7 @@ namespace OxPt
                 }
             }
 
-            Assert.Equal(err, returnedTemplateError);
+            Assert.Equal(expectError, returnedTemplateError);
         }
 
         //private static bool AllCellsHaveParagraphs(WordprocessingDocument wordDoc)
@@ -355,6 +361,22 @@ namespace OxPt
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddHBand' attribute is not declared.",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddVBand' attribute is not declared.",
             "The attribute 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:name' has invalid value 'useWord2013TrackBottomHyphenation'. The Enumeration constraint failed.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:allStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:alternateStyleNames' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:clearFormatting' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:customStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnNumbering' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnParagraphs' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnRuns' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnTables' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:headingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:latentStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:numberingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:stylesInUse' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:tableStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:top3HeadingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:visibleStyles' attribute is not declared.",
+            "The element has invalid child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:doNotEmbedSmartTags'.",
         };
     }
 }
