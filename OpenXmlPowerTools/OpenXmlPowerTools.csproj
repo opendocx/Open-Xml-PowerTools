@@ -6,14 +6,14 @@
     <Company>opendocx</Company>
     <Product></Product>
     <Authors>opendocx, Eric White</Authors>
-    <Description>The OpenDocx fork of Open-Xml-Power-Tools. Essentially identical to maintainer EricWhite's vNext fork (as of early May 2019), but includes only .NET Standard 2.0 build target for use in cross-platform scenarios.
+    <Description>The OpenDocx fork of Open-Xml-Power-Tools. Closely based on maintainer EricWhite's vNext fork (as of June 2021), but includes only .NET Standard 2.0 build target for use in cross-platform scenarios.
 
-This version includes a minor but experimental extension that facilitates document composition.</Description>
+This version also includes a minor but experimental extension that facilitates document composition, as well as a handful of bugfixes.</Description>
     <PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools.git</RepositoryUrl>
-    <AssemblyVersion>4.4.22.3</AssemblyVersion>
-    <FileVersion>4.4.22.3</FileVersion>
-    <Version>4.4.22-alpha3</Version>
+    <AssemblyVersion>4.6.23.3</AssemblyVersion>
+    <FileVersion>4.6.23.3</FileVersion>
+    <Version>4.6.23-alpha3</Version>
     <PackageId>OpenXmlPowerTools-NetStandard</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
   </PropertyGroup>
