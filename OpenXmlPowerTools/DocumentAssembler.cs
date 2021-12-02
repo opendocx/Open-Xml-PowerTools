@@ -667,20 +667,10 @@ namespace OpenXmlPowerTools
                         return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
                     }
 
-                    // XElement xml = null;
-                    // if (newValue.StartsWith("<") && newValue.EndsWith(">"))
-                    // {
-                    //     try
-                    //     {
-                    //         xml = XElement.Parse(newValue);
-                    //     }
-                    //     catch (XmlException e) {}
-                    // }
-                    // else
-                    if (newValue.StartsWith("{DocumentBuilder:Insert{") && newValue.EndsWith("}}")) // check for Insert ID (for DocumentBuilder)
+                    if (newValue.StartsWith("{INSERT{") && newValue.EndsWith("}}")) // check for Insert ID (for DocumentBuilder)
                     {
                         return new XElement(PtOpenXml.Insert,
-                            new XAttribute("Id", newValue.Substring(2, newValue.Length - 4)));
+                            new XAttribute("Id", newValue.Substring(8, newValue.Length - 10)));
                     }
                     else if (para != null)
                     {
