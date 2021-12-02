@@ -11,9 +11,9 @@
 This version also includes a minor but experimental extension that facilitates document composition, as well as a handful of bugfixes.</Description>
     <PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools.git</RepositoryUrl>
-    <AssemblyVersion>4.6.23.3</AssemblyVersion>
-    <FileVersion>4.6.23.3</FileVersion>
-    <Version>4.6.23-alpha3</Version>
+    <AssemblyVersion>4.6.23.4</AssemblyVersion>
+    <FileVersion>4.6.23.4</FileVersion>
+    <Version>4.6.23-alpha4</Version>
     <PackageId>OpenXmlPowerTools-NetStandard</PackageId>
     <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
   </PropertyGroup>
