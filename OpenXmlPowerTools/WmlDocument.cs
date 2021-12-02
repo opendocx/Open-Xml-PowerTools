@@ -40,10 +40,12 @@ namespace OpenXmlPowerTools
             : base(name, values)
         {
             ParentWmlDocument = wmlDocument;
-            this.Add(
-                new XAttribute(PtOpenXml.Uri, uri),
-                new XAttribute(XNamespace.Xmlns + "pt", PtOpenXml.pt)
-            );
+            this.Add(new XAttribute(PtOpenXml.Uri, uri));
+            var exPt = (string) this.Attribute(XNamespace.Xmlns + "pt");
+            if (exPt == null)
+                this.Add(new XAttribute(XNamespace.Xmlns + "pt", PtOpenXml.pt));
+            else if (exPt != PtOpenXml.pt.ToString())
+                throw new OpenXmlPowerToolsException("Main document part contains mismatched pt attribute");
         }
     }
 
