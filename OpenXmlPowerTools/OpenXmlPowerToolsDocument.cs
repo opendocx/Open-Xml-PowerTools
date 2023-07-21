@@ -20,9 +20,9 @@ namespace OpenXmlPowerTools
             {
                 type = GetDocumentType(bytes);
             }
-            catch (FileFormatException)
+            catch (FileFormatException e)
             {
-                throw new PowerToolsDocumentException("Not an Open XML document.");
+                throw new PowerToolsDocumentException("Not an Open XML document.", e);
             }
             if (type == typeof(WordprocessingDocument))
             {
@@ -136,9 +136,9 @@ namespace OpenXmlPowerTools
             {
                 type = GetDocumentType(tempByteArray);
             }
-            catch (FileFormatException)
+            catch (FileFormatException e)
             {
-                throw new PowerToolsDocumentException("Not an Open XML document.");
+                throw new PowerToolsDocumentException("Not an Open XML document.", e);
             }
 
             using var ms = new MemoryStream();

@@ -25,7 +25,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -38,7 +38,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -118,7 +118,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -135,7 +135,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -152,7 +152,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
