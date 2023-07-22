@@ -508,11 +508,10 @@ namespace OpenXmlPowerTools
             public string SchemaValidationMessage;
         }
 
-        private static string ValidatePerSchema(XElement element)
+        // Static constructor is called at most one time, before any instance constructor is invoked or static member is accessed.
+        static DocumentAssembler()
         {
-            if (s_PASchemaSets == null)
-            {
-                s_PASchemaSets = new Dictionary<XName, PASchemaSet>()
+            s_PASchemaSets = new Dictionary<XName, PASchemaSet>()
                 {
                     {
                         PA.Content,
@@ -589,14 +588,17 @@ namespace OpenXmlPowerTools
                         }
                     },
                 };
-                foreach (var item in s_PASchemaSets)
-                {
-                    var itemPAss = item.Value;
-                    XmlSchemaSet schemas = new XmlSchemaSet();
-                    schemas.Add("", XmlReader.Create(new StringReader(itemPAss.XsdMarkup)));
-                    itemPAss.SchemaSet = schemas;
-                }
+            foreach (var item in s_PASchemaSets)
+            {
+                var itemPAss = item.Value;
+                XmlSchemaSet schemas = new XmlSchemaSet();
+                schemas.Add("", XmlReader.Create(new StringReader(itemPAss.XsdMarkup)));
+                itemPAss.SchemaSet = schemas;
             }
+        }
+
+        private static string ValidatePerSchema(XElement element)
+        {
             if (!s_PASchemaSets.ContainsKey(element.Name))
             {
                 return string.Format("Invalid XML: {0} is not a valid element", element.Name.LocalName);

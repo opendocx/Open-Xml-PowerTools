@@ -58,6 +58,7 @@ namespace OpenXmlPowerTools
     public class PowerToolsDocumentException : Exception
     {
         public PowerToolsDocumentException(string message) : base(message) { }
+        public PowerToolsDocumentException(string message, Exception innerException) : base(message, innerException) { }
     }
     public class PowerToolsInvalidDataException : Exception
     {
@@ -77,9 +78,9 @@ namespace OpenXmlPowerTools
             {
                 type = GetDocumentType(bytes);
             }
-            catch (FileFormatException)
+            catch (FileFormatException e)
             {
-                throw new PowerToolsDocumentException("Not an Open XML document.");
+                throw new PowerToolsDocumentException("Not an Open XML document.", e);
             }
             if (type == typeof(WordprocessingDocument))
                 return new WmlDocument(fileName, bytes);
@@ -158,9 +159,9 @@ namespace OpenXmlPowerTools
             {
                 type = GetDocumentType(tempByteArray);
             }
-            catch (FileFormatException)
+            catch (FileFormatException e)
             {
-                throw new PowerToolsDocumentException("Not an Open XML document.");
+                throw new PowerToolsDocumentException("Not an Open XML document.", e);
             }
 
             using (MemoryStream ms = new MemoryStream())
@@ -536,7 +537,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -549,7 +550,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -630,7 +631,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
         public SpreadsheetDocument GetSpreadsheetDocument()
@@ -643,7 +644,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
@@ -657,7 +658,7 @@ namespace OpenXmlPowerTools
             }
             catch (Exception e)
             {
-                throw new PowerToolsDocumentException(e.Message);
+                throw new PowerToolsDocumentException(e.Message, e);
             }
         }
 
