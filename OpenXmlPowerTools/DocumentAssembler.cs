@@ -28,6 +28,14 @@ namespace OpenXmlPowerTools
 
         public static WmlDocument AssembleDocument(WmlDocument templateDoc, XElement data, out bool templateError)
         {
+            var doc = AssembleDocument(templateDoc, data, out AssembleResults results);
+            templateError = results.HasError;
+            return doc;
+        }
+
+        public static WmlDocument AssembleDocument(WmlDocument templateDoc, XElement data, out AssembleResults results)
+        {
+            results = new AssembleResults();
             byte[] byteArray = templateDoc.DocumentByteArray;
             using (MemoryStream mem = new MemoryStream())
             {
@@ -37,19 +45,17 @@ namespace OpenXmlPowerTools
                     if (RevisionAccepter.HasTrackedRevisions(wordDoc))
                         throw new OpenXmlPowerToolsException("Invalid DocumentAssembler template - contains tracked revisions");
 
-                    var te = new TemplateError();
                     foreach (var part in wordDoc.ContentParts())
                     {
-                        ProcessTemplatePart(data, te, part);
+                        ProcessTemplatePart(data, results, part);
                     }
-                    templateError = te.HasError;
                 }
                 WmlDocument assembledDocument = new WmlDocument("TempFileName.docx", mem.ToArray());
                 return assembledDocument;
             }
         }
 
-        private static void ProcessTemplatePart(XElement data, TemplateError te, OpenXmlPart part)
+        private static void ProcessTemplatePart(XElement data, AssembleResults te, OpenXmlPart part)
         {
             XDocument xDoc = part.GetXDocument();
 
@@ -90,7 +96,7 @@ namespace OpenXmlPowerTools
             PA.Table,
         };
 
-        private static object ForceBlockLevelAsAppropriate(XNode node, TemplateError te)
+        private static object ForceBlockLevelAsAppropriate(XNode node, AssembleResults te)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -140,7 +146,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static object FixDocBuilderInserts(XNode node, TemplateError te)
+        private static object FixDocBuilderInserts(XNode node, AssembleResults te)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -190,7 +196,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static void ProcessOrphanEndRepeatEndConditional(XElement xDocRoot, TemplateError te)
+        private static void ProcessOrphanEndRepeatEndConditional(XElement xDocRoot, AssembleResults te)
         {
             foreach (var element in xDocRoot.Descendants(PA.EndRepeat).ToList())
             {
@@ -248,7 +254,7 @@ namespace OpenXmlPowerTools
         // The following method is written using tree modification, not RPFT, because it is easier to write in this fashion.
         // These types of operations are not as easy to write using RPFT.
         // Unless you are completely clear on the semantics of LINQ to XML DML, do not make modifications to this method.
-        private static void NormalizeTablesRepeatAndConditional(XElement xDoc, TemplateError te)
+        private static void NormalizeTablesRepeatAndConditional(XElement xDoc, AssembleResults te)
         {
             var tables = xDoc.Descendants(PA.Table).ToList();
             foreach (var table in tables)
@@ -345,7 +351,7 @@ namespace OpenXmlPowerTools
             "EndConditional",
         };
 
-        private static object TransformToMetadata(XNode node, XElement data, TemplateError te)
+        private static object TransformToMetadata(XNode node, XElement data, AssembleResults te)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -484,7 +490,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static XElement TransformXmlTextToMetadata(TemplateError te, string xmlText)
+        private static XElement TransformXmlTextToMetadata(AssembleResults te, string xmlText)
         {
             XElement xml;
             try
@@ -640,12 +646,12 @@ namespace OpenXmlPowerTools
 
         private static Dictionary<XName, PASchemaSet> s_PASchemaSets = null;
 
-        private class TemplateError
+        public class AssembleResults
         {
             public bool HasError = false;
         }
 
-        static object ContentReplacementTransform(XNode node, XElement data, TemplateError templateError)
+        static object ContentReplacementTransform(XNode node, XElement data, AssembleResults asmResult)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -666,7 +672,7 @@ namespace OpenXmlPowerTools
                     }
                     catch (XPathException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, asmResult);
                     }
 
                     if (newValue.StartsWith("{INSERT{") && newValue.EndsWith("}}")) // check for Insert ID (for DocumentBuilder)
@@ -713,7 +719,7 @@ namespace OpenXmlPowerTools
                     }
                     catch (XPathException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, asmResult);
                     }
                     if (!repeatingData.Any())
                     {
@@ -726,13 +732,13 @@ namespace OpenXmlPowerTools
                             //else
                             //    return new XElement(W.r);
                         }
-                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
+                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", asmResult);
                     }
                     var newContent = repeatingData.Select(d =>
                         {
                             var content = element
                                 .Elements()
-                                .Select(e => ContentReplacementTransform(e, d, templateError))
+                                .Select(e => ContentReplacementTransform(e, d, asmResult))
                                 .ToList();
                             return content;
                         })
@@ -748,10 +754,10 @@ namespace OpenXmlPowerTools
                     }
                     catch (XPathException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, asmResult);
                     }
                     if (tableData.Count() == 0)
-                        return CreateContextErrorMessage(element, "Table Select returned no data", templateError);
+                        return CreateContextErrorMessage(element, "Table Select returned no data", asmResult);
                     XElement table = element.Element(W.tbl);
                     XElement protoRow = table.Elements(W.tr).Skip(1).FirstOrDefault();
                     var footerRowsBeforeTransform = table
@@ -759,10 +765,10 @@ namespace OpenXmlPowerTools
                         .Skip(2)
                         .ToList();
                     var footerRows = footerRowsBeforeTransform
-                        .Select(x => ContentReplacementTransform(x, data, templateError))
+                        .Select(x => ContentReplacementTransform(x, data, asmResult))
                         .ToList();
                     if (protoRow == null)
-                        return CreateContextErrorMessage(element, string.Format("Table does not contain a prototype row"), templateError);
+                        return CreateContextErrorMessage(element, string.Format("Table does not contain a prototype row"), asmResult);
                     protoRow.Descendants(W.bookmarkStart).Remove();
                     protoRow.Descendants(W.bookmarkEnd).Remove();
                     XElement newTable = new XElement(W.tbl,
@@ -788,7 +794,7 @@ namespace OpenXmlPowerTools
                                                 tc.Elements().Where(z => z.Name != W.p),
                                                 new XElement(W.p,
                                                     paragraph.Element(W.pPr),
-                                                    CreateRunErrorMessage(e.Message, templateError)));
+                                                    CreateRunErrorMessage(e.Message, asmResult)));
                                             return errorCell;
                                         }
 
@@ -812,9 +818,9 @@ namespace OpenXmlPowerTools
                     var notMatch = (string)element.Attribute(PA.NotMatch);
 
                     if (match == null && notMatch == null)
-                        return CreateContextErrorMessage(element, "Conditional: Must specify either Match or NotMatch", templateError);
+                        return CreateContextErrorMessage(element, "Conditional: Must specify either Match or NotMatch", asmResult);
                     if (match != null && notMatch != null)
-                        return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", templateError);
+                        return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", asmResult);
 
                     string testValue = null; 
                    
@@ -824,17 +830,17 @@ namespace OpenXmlPowerTools
                     }
 	                catch (XPathException e)
                     {
-                        return CreateContextErrorMessage(element, e.Message, templateError);
+                        return CreateContextErrorMessage(element, e.Message, asmResult);
                     }
                   
                     if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
                     {
-                        var content = element.Elements().Select(e => ContentReplacementTransform(e, data, templateError));
+                        var content = element.Elements().Select(e => ContentReplacementTransform(e, data, asmResult));
                         return content;
                     }
                     return null;
                 }
-                var transformedNodes = element.Nodes().Select(n => ContentReplacementTransform(n, data, templateError));
+                var transformedNodes = element.Nodes().Select(n => ContentReplacementTransform(n, data, asmResult));
                 if (element.Name == W.tc && transformedNodes.All(n => n == null || (n is XElement && (n as XElement).Name == W.tcPr)))
                 {
                     // avoid empty table cells, which are invalid -- add an empty paragraph back in
@@ -845,20 +851,20 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static object CreateContextErrorMessage(XElement element, string errorMessage, TemplateError templateError)
+        private static object CreateContextErrorMessage(XElement element, string errorMessage, AssembleResults asmResult)
         {
             XElement para = element.Descendants(W.p).FirstOrDefault();
             XElement run = element.Descendants(W.r).FirstOrDefault();
-            var errorRun = CreateRunErrorMessage(errorMessage, templateError);
+            var errorRun = CreateRunErrorMessage(errorMessage, asmResult);
             if (para != null)
                 return new XElement(W.p, errorRun);
             else
                 return errorRun;
         }
 
-        private static XElement CreateRunErrorMessage(string errorMessage, TemplateError templateError)
+        private static XElement CreateRunErrorMessage(string errorMessage, AssembleResults asmResult)
         {
-            templateError.HasError = true;
+            asmResult.HasError = true;
             var errorRun = new XElement(W.r,
                 new XElement(W.rPr,
                     new XElement(W.color, new XAttribute(W.val, "FF0000")),
@@ -867,9 +873,9 @@ namespace OpenXmlPowerTools
             return errorRun;
         }
 
-        private static XElement CreateParaErrorMessage(string errorMessage, TemplateError templateError)
+        private static XElement CreateParaErrorMessage(string errorMessage, AssembleResults asmResult)
         {
-            templateError.HasError = true;
+            asmResult.HasError = true;
             var errorPara = new XElement(W.p,
                 new XElement(W.r,
                     new XElement(W.rPr,

@@ -240,7 +240,7 @@ namespace OxPt
             var wmlTemplate = new WmlDocument(templateDocx.FullName);
             var xmlData = XElement.Load(dataFile.FullName);
 
-            var afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmlData, out var returnedTemplateError);
+            var afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmlData, out bool returnedTemplateError);
             var assembledDocx = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, templateDocx.Name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
             afterAssembling.SaveAs(assembledDocx.FullName);
         }
