@@ -15,6 +15,7 @@ using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Packaging;
 using OpenXmlPowerTools;
 using System.Collections;
+using DocumentFormat.OpenXml;
 
 namespace OpenXmlPowerTools
 {
@@ -80,7 +81,7 @@ namespace OpenXmlPowerTools
             // do the actual content replacement
             xDocRoot = (XElement)ContentReplacementTransform(xDocRoot, data, te);
 
-            // if any DocumentBuilder Insert elements were placed at run-level, promote them to block-level
+            // if any DocumentBuilder Insert elements were dynamically placed at run-level, promote them to block-level
             xDocRoot = (XElement)FixDocBuilderInserts(xDocRoot, te);
 
             xDoc.Elements().First().ReplaceWith(xDocRoot);
@@ -94,6 +95,7 @@ namespace OpenXmlPowerTools
             PA.Repeat,
             PA.EndRepeat,
             PA.Table,
+            PA.Insert,
         };
 
         private static object ForceBlockLevelAsAppropriate(XNode node, AssembleResults te)
@@ -157,36 +159,36 @@ namespace OpenXmlPowerTools
                     var count = childMeta.Count();
                     if (count > 0)
                     {
-                        var pAt = element.Attributes();
-                        var pPr = element.Elements(W.pPr).FirstOrDefault();
-                        XElement p = null;
-                        List<XElement> list = new List<XElement>();
+                        var paraAttribs = element.Attributes();
+                        var paraProps = element.Elements(W.pPr).FirstOrDefault();
+                        XElement newPara = null;
+                        List<XElement> blockList = new List<XElement>();
                         foreach (var elem in element.Elements().Where(e => e.Name != W.pPr))
                         {
                             if (elem.Name == PtOpenXml.Insert)
                             {
-                                if (p != null)
+                                if (newPara != null)
                                 {
-                                    list.Add(p);
-                                    p = null;
+                                    blockList.Add(newPara);
+                                    newPara = null;
                                 }
-                                list.Add(elem);
+                                blockList.Add(elem);
                             }
                             else
                             { // non-insert content
-                                if (p == null)
+                                if (newPara == null)
                                 {
-                                    p = new XElement(W.p, pAt, pPr);
+                                    newPara = new XElement(W.p, paraAttribs, paraProps);
                                 }
-                                p.Add(new XElement(elem.Name, elem.Attributes(), elem.Nodes().Select(n => FixDocBuilderInserts(n, te))));
+                                newPara.Add(new XElement(elem.Name, elem.Attributes(), elem.Nodes().Select(n => FixDocBuilderInserts(n, te))));
                             }
                         }
-                        if (p != null)
+                        if (newPara != null)
                         {
-                            list.Add(p);
-                            p = null;
+                            blockList.Add(newPara);
+                            newPara = null;
                         }
-                        return list;
+                        return blockList;
                     }
                 }
                 return new XElement(element.Name,
@@ -349,6 +351,7 @@ namespace OpenXmlPowerTools
             "EndRepeat",
             "Conditional",
             "EndConditional",
+            "Insert",
         };
 
         private static object TransformToMetadata(XNode node, XElement data, AssembleResults te)
@@ -593,6 +596,20 @@ namespace OpenXmlPowerTools
                                 </xs:schema>",
                         }
                     },
+                    {
+                        PA.Insert,
+                        new PASchemaSet() {
+                            XsdMarkup =
+                              @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+                                  <xs:element name='Insert'>
+                                    <xs:complexType>
+                                      <xs:attribute name='Id' type='xs:string' use='required' />
+                                      <xs:attribute name='Select' type='xs:string' use='optional' />
+                                    </xs:complexType>
+                                  </xs:element>
+                                </xs:schema>",
+                        }
+                    },
                 };
             foreach (var item in s_PASchemaSets)
             {
@@ -630,12 +647,14 @@ namespace OpenXmlPowerTools
             public static XName EndRepeat = "EndRepeat";
             public static XName Conditional = "Conditional";
             public static XName EndConditional = "EndConditional";
+            public static XName Insert = "Insert";
 
             public static XName Select = "Select";
             public static XName Optional = "Optional";
             public static XName Match = "Match";
             public static XName NotMatch = "NotMatch";
             public static XName Depth = "Depth";
+            public static XName Id = "Id";
         }
 
         private class PASchemaSet
@@ -646,9 +665,16 @@ namespace OpenXmlPowerTools
 
         private static Dictionary<XName, PASchemaSet> s_PASchemaSets = null;
 
+        public class AssembleInsert
+        {
+            public string Id { get; set; }
+            public XElement Data { get; set; }
+        }
+
         public class AssembleResults
         {
             public bool HasError = false;
+            public List<AssembleInsert> Inserts = new();
         }
 
         static object ContentReplacementTransform(XNode node, XElement data, AssembleResults asmResult)
@@ -675,10 +701,13 @@ namespace OpenXmlPowerTools
                         return CreateContextErrorMessage(element, "XPathException: " + e.Message, asmResult);
                     }
 
-                    if (newValue.StartsWith("{INSERT{") && newValue.EndsWith("}}")) // check for Insert ID (for DocumentBuilder)
+                    if (newValue.StartsWith("oxpt://DocumentAssembler/insert/"))
                     {
-                        return new XElement(PtOpenXml.Insert,
-                            new XAttribute("Id", newValue.Substring(8, newValue.Length - 10)));
+                        // INDIRECT mode inserts (DIRECT and AUTO modes handled below)
+                        var uri = new Uri(newValue);
+                        var id = uri.Segments.Last();
+                        asmResult.Inserts.Add(new AssembleInsert() { Id = id });
+                        return new XElement(PtOpenXml.Insert, new XAttribute("Id", id));
                     }
                     else if (para != null)
                     {
@@ -705,6 +734,30 @@ namespace OpenXmlPowerTools
                         }
                         return list;
                     }
+                }
+                if (element.Name == PA.Insert)
+                {
+                    // DIRECT or AUTO mode inserts
+                    var id = (string)element.Attribute(PA.Id);
+                    var select = (string)element.Attribute(PA.Select);
+                    XElement xmlData = null;
+                    if (select != null)
+                    {
+                        try
+                        {
+                            xmlData = data.XPathSelectElement(select);
+                        }
+                        catch (XPathException e)
+                        {
+                            return CreateContextErrorMessage(element, "XPathException: " + e.Message, asmResult);
+                        }
+                    }
+                    if (xmlData != null)
+                    {
+                        id += "@" + asmResult.Inserts.Count.ToString();
+                    }
+                    asmResult.Inserts.Add(new AssembleInsert() { Id = id, Data = xmlData });
+                    return new XElement(PtOpenXml.Insert, new XAttribute("Id", id));
                 }
                 if (element.Name == PA.Repeat)
                 {
@@ -735,13 +788,13 @@ namespace OpenXmlPowerTools
                         return CreateContextErrorMessage(element, "Repeat: Select returned no data", asmResult);
                     }
                     var newContent = repeatingData.Select(d =>
-                        {
-                            var content = element
-                                .Elements()
-                                .Select(e => ContentReplacementTransform(e, d, asmResult))
-                                .ToList();
-                            return content;
-                        })
+                    {
+                        var content = element
+                            .Elements()
+                            .Select(e => ContentReplacementTransform(e, d, asmResult))
+                            .ToList();
+                        return content;
+                    })
                         .ToList();
                     return newContent;
                 }
@@ -822,17 +875,17 @@ namespace OpenXmlPowerTools
                     if (match != null && notMatch != null)
                         return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", asmResult);
 
-                    string testValue = null; 
-                   
+                    string testValue = null;
+
                     try
                     {
                         testValue = EvaluateXPathToString(data, xPath, false);
                     }
-	                catch (XPathException e)
+                    catch (XPathException e)
                     {
                         return CreateContextErrorMessage(element, e.Message, asmResult);
                     }
-                  
+
                     if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
                     {
                         var content = element.Elements().Select(e => ContentReplacementTransform(e, data, asmResult));
@@ -892,7 +945,7 @@ namespace OpenXmlPowerTools
             {
                 //support some cells in the table may not have an xpath expression.
                 if (String.IsNullOrWhiteSpace(xPath)) return String.Empty;
-                
+
                 xPathSelectResult = element.XPathEvaluate(xPath);
             }
             catch (XPathException e)
@@ -913,8 +966,8 @@ namespace OpenXmlPowerTools
                     throw new XPathException(string.Format("XPath expression ({0}) returned more than one node", xPath));
                 }
 
-                XObject selectedDatum = selectedData.First(); 
-                
+                XObject selectedDatum = selectedData.First();
+
                 if (selectedDatum is XElement) return ((XElement) selectedDatum).Value;
 
                 if (selectedDatum is XAttribute) return ((XAttribute) selectedDatum).Value;
