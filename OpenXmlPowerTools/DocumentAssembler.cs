@@ -191,6 +191,24 @@ namespace OpenXmlPowerTools
                         return blockList;
                     }
                 }
+                else if (element.Name == W.sectPr && element.Parent.Name == W.body) // end of document
+                {
+                    // confirm there is a valid "last paragraph" in the document, as required for proper behavior of DocumentBuilder
+                    var elemBefore = (element.PreviousNode as XElement);
+                    if (elemBefore == null || elemBefore.Name != W.p || elemBefore.Descendants(W.sectPr).FirstOrDefault() != null)
+                    {
+                        // last paragraph is missing... most likely because the last paragraph contained a block-level EndConditional
+                        // or EndRepeat, which was removed in NormalizeTablesRepeatAndConditional. Word itself is okay if the last
+                        // paragraph is missing... in which case Word just dynamically adds a new paragraph. But DocumentBuilder
+                        // does not handle the situation as gracefully in its implementation of KeepSections, so I'm doing this here
+                        // to work around problems there. (TODO: figure out how to fix DocumentBuilder so this is not necessary?)
+                        return new XElement[] {
+                            new XElement(W.p),
+                            element,
+                        };
+                    }
+                    return element;
+                }
                 return new XElement(element.Name,
                     element.Attributes(),
                     element.Nodes().Select(n => FixDocBuilderInserts(n, te)));

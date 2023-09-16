@@ -155,6 +155,7 @@ namespace OxPt
             }
 
             Assert.Equal(err, returnedTemplateError);
+            AssertValidLastParagraph(afterAssembling); // experimental
         }
 
         [Theory]
@@ -204,9 +205,9 @@ namespace OxPt
             bool returnedTemplateError;
             WmlDocument afterAssembling;
             Assert.Throws<OpenXmlPowerToolsException>(() =>
-                {
-                    afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmldata, out returnedTemplateError);
-                });
+            {
+                afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmldata, out returnedTemplateError);
+            });
         }
 
         [Fact]
@@ -313,8 +314,31 @@ namespace OxPt
             Assert.Equal(expectError, returnedTemplateError);
         }
 
-        // tests for insert
-        public void DA300(string nameParent, string nameChild, string data, bool err, bool errChild)
+        private void AssertValidLastParagraph(WmlDocument doc)
+        {
+            // ensure the last block-level item in the document is a paragraph
+            var lastInBody = doc.MainDocumentPart.Element(W.body).LastNode as XElement;
+            Assert.NotNull(lastInBody);
+            var lastBlock = lastInBody.PreviousNode as XElement;
+            Assert.Equal(W.p, lastBlock.Name);
+            // ... and that that paragraph does not have a section break
+            Assert.Null(lastBlock.Descendants(W.sectPr).FirstOrDefault());
+            // (because if it DID, that would mean the last section has zero paragraphs, which seems iffy --
+            // Word never does that on its own, and DocumentBuilder mishandles it!)
+        }
+
+        [Fact]
+        public void DA280()
+        {
+            string name = "DA280-ConditionalSectionBreaks.docx";
+            DA101(name, "DA280-data.xml", false);
+            var outfile = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
+            WmlDocument afterAssembling = new WmlDocument(outfile.FullName);
+            AssertValidLastParagraph(afterAssembling);
+        }
+
+        // tests for indirect insert (legacy -- prior to introduction of DocumentComposer)
+        private void DA300(string nameParent, string nameChild, string data, bool err, bool errChild)
         {
             DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
             FileInfo parentTemplateDocx = new FileInfo(Path.Combine(sourceDir.FullName, nameParent));
