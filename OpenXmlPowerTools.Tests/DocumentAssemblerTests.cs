@@ -335,6 +335,32 @@ namespace OxPt
             var outfile = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
             WmlDocument afterAssembling = new WmlDocument(outfile.FullName);
             AssertValidLastParagraph(afterAssembling);
+            // verify that the first section's Start Type is "Next Page" and the 2nd section's Start Type is "Continuous"
+            var mainPart = afterAssembling.MainDocumentPart;
+            var sectProps = mainPart.Element(W.body).Descendants(W.sectPr).ToList();
+            Assert.Equal(2, sectProps.Count);
+            var sect1Type = sectProps[0].Element(W.type); // null == "nextpage"
+            Assert.Null(sect1Type);
+            var sect2Type = sectProps[1].Element(W.type);
+            Assert.Equal("continuous", sect2Type.Attribute(W.val).Value);
+        }
+
+        [Fact]
+        public void DA282()
+        {
+            string name = "DA282-conditional_margin.docx"; // more deeply nested conditional structure than above (though similar in effect)
+            DA101(name, "DA282-conditional_margin_data.xml", false);
+            var outfile = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
+            WmlDocument afterAssembling = new WmlDocument(outfile.FullName);
+            AssertValidLastParagraph(afterAssembling);
+            // verify that the first section's Start Type is "Next Page" and the 2nd section's Start Type is "Continuous"
+            var mainPart = afterAssembling.MainDocumentPart;
+            var sectProps = mainPart.Element(W.body).Descendants(W.sectPr).ToList();
+            Assert.Equal(2, sectProps.Count);
+            var sect1Type = sectProps[0].Element(W.type); // null == "nextpage"
+            Assert.Null(sect1Type);
+            var sect2Type = sectProps[1].Element(W.type);
+            Assert.Equal("continuous", sect2Type.Attribute(W.val).Value);
         }
 
         // tests for indirect insert (legacy -- prior to introduction of DocumentComposer)

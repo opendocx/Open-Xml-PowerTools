@@ -693,6 +693,23 @@ namespace OpenXmlPowerTools
         {
             public bool HasError = false;
             public List<AssembleInsert> Inserts = new();
+
+            internal bool HasSectionStartType = false;
+            internal XElement SectionStartType = null;
+
+            internal void SetSectionStartType(XElement sectionStartType)
+            {
+                SectionStartType = sectionStartType;
+                HasSectionStartType= true;
+            }
+
+            internal XElement ClearSectionStartType()
+            {
+                var result = SectionStartType;
+                SectionStartType = null;
+                HasSectionStartType = false;
+                return result;
+            }
         }
 
         static object ContentReplacementTransform(XNode node, XElement data, AssembleResults asmResult)
@@ -909,8 +926,12 @@ namespace OpenXmlPowerTools
                         var content = element.Elements().Select(e => ContentReplacementTransform(e, data, asmResult));
                         return content;
                     }
-                    PreDeleteFalseConditional(element);
+                    BeforeDeleteFalseConditional(element, asmResult);
                     return null;
+                }
+                if (element.Name == W.sectPr)
+                {
+                    element = (XElement) TransformSectionProps(element, asmResult);
                 }
                 var transformedNodes = element.Nodes().Select(n => ContentReplacementTransform(n, data, asmResult));
                 if (element.Name == W.tc && transformedNodes.All(n => n == null || (n is XElement && (n as XElement).Name == W.tcPr)))
@@ -923,7 +944,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static void PreDeleteFalseConditional(XElement element)
+        private static void BeforeDeleteFalseConditional(XElement element, AssembleResults asmResult)
         {
             // Check if we are deleting section properties; if so, the SectionType property requires special handling.
             // Rationale: The SectionType property "specifies how the contents of the current section shall be placed
@@ -934,31 +955,64 @@ namespace OpenXmlPowerTools
             // the previous section should transition into the next section.
             // To handle it properly, we must "move" this section property into the next section AFTER the deleted
             // portion. (See https://wordmvp.com/FAQs/Formatting/WorkWithSections.htm.)
-            var firstDeletedSect = element.Descendants(W.sectPr).FirstOrDefault();
-            if (firstDeletedSect != null)
+            if (!asmResult.HasSectionStartType)
             {
-                // if a section is being removed due to a non-matching Conditional, that means the Conditional
-                // is block level. So we can use ElementsAfterSelf to scan forward and find the next section.
-                var sectType = firstDeletedSect.Element(W.type);
-                var nextSect = element.ElementsAfterSelf(W.sectPr).FirstOrDefault();
-                if (nextSect != null)
+                var firstDeletedSect = element.Descendants(W.sectPr).FirstOrDefault();
+                if (firstDeletedSect != null)
                 {
-                    // We use tree modification, not RPFT, because RPFT would require that we "remember" sectType
-                    // to be able to apply it later, which is awkward.
-                    var nextSectType = nextSect.Element(W.type);
-                    if (nextSectType == null)
-                    {
-                        if (sectType != null)
-                        {
-                            nextSect.AddFirst(sectType);
-                        }
-                    }
-                    else
-                    {
-                        nextSectType.ReplaceWith(sectType);
-                    }
+                    // if a section is being removed due to a non-matching Conditional, that means the Conditional
+                    // is block level. So we can use ElementsAfterSelf to scan forward and find the next section.
+                    asmResult.SetSectionStartType(firstDeletedSect.Element(W.type));
                 }
             }
+        }
+
+        private static object TransformSectionProps(XNode node, AssembleResults asmResult)
+        {
+            XElement element = node as XElement;
+            if (element != null)
+            {
+                if (element.Name == W.sectPr)
+                {
+                    if (!asmResult.HasSectionStartType)
+                    {
+                        return element;
+                    }
+                    else // asmResult.HasSectionStartType -- a prior section specified a "section start" type that this section should inherit
+                    {
+                        var thisSectType = element.Element(W.type);
+                        if (thisSectType == null)
+                        {
+                            // this section's start type is "next page"; is that already correct?
+                            if (asmResult.SectionStartType == null)
+                            {
+                                // nothing to add or replace
+                                asmResult.ClearSectionStartType();
+                                return element;
+                            }
+                            else // add asmResult.SectionStartType to the section properties
+                            {
+                                var sectProps = new object[] {
+                                    asmResult.SectionStartType,
+                                    element.Nodes(),
+                                };
+                                asmResult.ClearSectionStartType();
+                                return new XElement(element.Name, element.Attributes(), sectProps);
+                            }
+                        }
+                        // else fall through and allow the recursive TransformSectionProps below to replace thisSectType with asmResult.SectionStartType
+                    }
+                }
+                else if (element.Name == W.type)
+                {
+                    if (asmResult.HasSectionStartType)
+                        return asmResult.ClearSectionStartType();
+                    else
+                        return element;
+                }
+                return new XElement(element.Name, element.Attributes(), element.Nodes().Select(n => TransformSectionProps(n, asmResult)));
+            }
+            return node;
         }
 
         private static object CreateContextErrorMessage(XElement element, string errorMessage, AssembleResults asmResult)

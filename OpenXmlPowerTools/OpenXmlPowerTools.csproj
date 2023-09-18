@@ -11,9 +11,9 @@
 This version also includes a new DocumentComposer class and some extensions to DocumentAssembler to facilitate document composition, as well as a handful of bugfixes.</Description>
     <PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools.git</RepositoryUrl>
-    <AssemblyVersion>4.6.24.4</AssemblyVersion>
-    <FileVersion>4.6.24.4</FileVersion>
-    <Version>4.6.24-beta4</Version>
+    <AssemblyVersion>4.6.24.5</AssemblyVersion>
+    <FileVersion>4.6.24.5</FileVersion>
+    <Version>4.6.24-beta5</Version>
     <PackageId>OpenXmlPowerTools-Net6</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
