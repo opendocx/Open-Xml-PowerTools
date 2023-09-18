@@ -909,6 +909,7 @@ namespace OpenXmlPowerTools
                         var content = element.Elements().Select(e => ContentReplacementTransform(e, data, asmResult));
                         return content;
                     }
+                    PreDeleteFalseConditional(element);
                     return null;
                 }
                 var transformedNodes = element.Nodes().Select(n => ContentReplacementTransform(n, data, asmResult));
@@ -920,6 +921,44 @@ namespace OpenXmlPowerTools
                 return new XElement(element.Name, element.Attributes(), transformedNodes);
             }
             return node;
+        }
+
+        private static void PreDeleteFalseConditional(XElement element)
+        {
+            // Check if we are deleting section properties; if so, the SectionType property requires special handling.
+            // Rationale: The SectionType property "specifies how the contents of the current section shall be placed
+            // relative to the previous section" (see
+            // https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.sectiontype).
+            // One must therefore think of SectionType as a property of the TRANSITION from the prior section
+            // TO the section being deleted. As such, deleting this section property loses the information about how
+            // the previous section should transition into the next section.
+            // To handle it properly, we must "move" this section property into the next section AFTER the deleted
+            // portion. (See https://wordmvp.com/FAQs/Formatting/WorkWithSections.htm.)
+            var firstDeletedSect = element.Descendants(W.sectPr).FirstOrDefault();
+            if (firstDeletedSect != null)
+            {
+                // if a section is being removed due to a non-matching Conditional, that means the Conditional
+                // is block level. So we can use ElementsAfterSelf to scan forward and find the next section.
+                var sectType = firstDeletedSect.Element(W.type);
+                var nextSect = element.ElementsAfterSelf(W.sectPr).FirstOrDefault();
+                if (nextSect != null)
+                {
+                    // We use tree modification, not RPFT, because RPFT would require that we "remember" sectType
+                    // to be able to apply it later, which is awkward.
+                    var nextSectType = nextSect.Element(W.type);
+                    if (nextSectType == null)
+                    {
+                        if (sectType != null)
+                        {
+                            nextSect.AddFirst(sectType);
+                        }
+                    }
+                    else
+                    {
+                        nextSectType.ReplaceWith(sectType);
+                    }
+                }
+            }
         }
 
         private static object CreateContextErrorMessage(XElement element, string errorMessage, AssembleResults asmResult)
