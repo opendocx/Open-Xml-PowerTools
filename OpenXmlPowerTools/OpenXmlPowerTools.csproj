@@ -6,16 +6,16 @@
     <Company>opendocx</Company>
     <Product></Product>
     <Authors>opendocx, OpenXmlDev</Authors>
-    <Description>The OpenDocx fork of Open-Xml-Power-Tools. Closely based on maintainer OpenXmlDev's vNext fork (as of July 2023), but includes only .NET 6.0 build target for use in cross-platform scenarios.
+    <Description>The OpenDocx fork of Open-Xml-Power-Tools. Closely based on maintainer OpenXmlDev's vNext fork (as of September 2023), but includes only .NET 6.0 build target for use in cross-platform scenarios.
 
-This version also includes a minor experimental extension that facilitates document composition, as well as a handful of bugfixes.</Description>
+This version also includes a new DocumentComposer class and some extensions to DocumentAssembler to facilitate document composition, as well as a handful of bugfixes.</Description>
     <PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
     <RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools.git</RepositoryUrl>
-    <AssemblyVersion>4.6.24.3</AssemblyVersion>
-    <FileVersion>4.6.24.3</FileVersion>
-    <Version>4.6.24-alpha3</Version>
+    <AssemblyVersion>4.6.24.4</AssemblyVersion>
+    <FileVersion>4.6.24.4</FileVersion>
+    <Version>4.6.24-beta4</Version>
     <PackageId>OpenXmlPowerTools-Net6</PackageId>
-    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
