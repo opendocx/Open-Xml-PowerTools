@@ -217,6 +217,60 @@ namespace OpenXmlPowerTools.Tests
   </w:body>
 </w:document>";
 
+        private const string NonBreakingSpacesAndLineBreaksXmlString =
+@"<?xml version=""1.0"" encoding=""UTF-8"" standalone=""yes""?>
+<w:document xmlns:w=""http://schemas.openxmlformats.org/wordprocessingml/2006/main"">
+  <w:body>
+    <w:p>
+      <w:r>
+        <w:t>First line</w:t>
+      </w:r>
+      <w:r>
+        <w:t>               </w:t>
+      </w:r>
+      <w:proofErr w:type=""gramStart""/>
+      <w:r>
+        <w:t xml:space=""preserve"">  </w:t>
+      </w:r>
+      <w:r>
+        <w:t>!</w:t>
+      </w:r>
+      <w:proofErr w:type=""gramEnd""/>
+      <w:r>
+        <w:br/>
+        <w:t>                                         </w:t>
+      </w:r>
+      <w:r>
+        <w:t>!</w:t>
+      </w:r>
+      <w:r>
+        <w:br/>
+      </w:r>
+      <w:r>
+        <w:t>Last line</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space=""preserve""> </w:t>
+      </w:r>
+      <w:r>
+        <w:t>{</w:t>
+      </w:r>
+      <w:r>
+        <w:t>find and replace me!</w:t>
+      </w:r>
+      <w:r>
+        <w:t>}</w:t>
+      </w:r>
+      <w:r>
+        <w:t xml:space=""preserve"">  </w:t>
+      </w:r>
+      <w:r>
+        <w:t>!</w:t>
+      </w:r>
+    </w:p>
+  </w:body>
+</w:document>";
+
         private static string InnerText(XContainer e)
         {
             return e.Descendants(W.r)
@@ -420,6 +474,33 @@ namespace OpenXmlPowerTools.Tests
 
                 Assert.Equal(2, count);
                 Assert.Equal("ThisIsAParagraphContainingNoNaturalLBsSoTheLBIsForced.", innerText);
+            }
+        }
+
+        [Fact]
+        public void CanMatchDespiteNoBreakSpacesAndLineBreaks()
+        {
+            XDocument partDocument = XDocument.Parse(NonBreakingSpacesAndLineBreaksXmlString);
+            XElement p = partDocument.Descendants(W.p).Last();
+            string innerText = InnerText(p);
+
+            Assert.Equal("First line                 !\r                                         !\rLast line {find and replace me!}  !", innerText);
+
+            using (var stream = new MemoryStream())
+            using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(stream, DocumentType))
+            {
+                MainDocumentPart part = wordDocument.AddMainDocumentPart();
+                part.PutXDocument(partDocument);
+
+                IEnumerable<XElement> content = partDocument.Descendants(W.p);
+                var regex = new Regex(@"{find and replace me!}");
+                int count = OpenXmlRegex.Replace(content, regex, "REPLACED", null);
+
+                p = partDocument.Descendants(W.p).Last();
+                innerText = InnerText(p);
+
+                Assert.Equal(1, count);
+                Assert.Equal("First line                 !\r                                         !\rLast line REPLACED  !", innerText);
             }
         }
 

@@ -176,6 +176,54 @@ Line 2!
     </w:p>
   </w:body>
 </w:document>";
+
+        [Theory]
+        [InlineData("Line 1\rLine 2\r",           "Line 1 Line 2",    "Line 1\nLine 2\n"      )]
+        [InlineData("   Line 1\r   Line 2\r",     "Line 1    Line 2", "   Line 1\n   Line 2\n")]
+        [InlineData("Line 1\nLine 2\n",           "Line 1 Line 2",    "Line 1\nLine 2\n"      )]
+        [InlineData("   Line 1\n   Line 2\n",     "Line 1    Line 2", "   Line 1\n   Line 2\n")]
+        [InlineData("Line 1\r\nLine 2\r\n",       "Line 1 Line 2",    "Line 1\nLine 2\n"      )]
+        [InlineData("   Line 1\r\n   Line 2\r\n", "Line 1    Line 2", "   Line 1\n   Line 2\n")]
+        public void HandlesDifferentLineEndingsWhenPreservingXmlSpace(string multiLineString, string expect1, string expect2)
+        {
+            var xmlString = PreserveSpacingMultiLineXmlString.Replace("XXX", multiLineString);
+            XDocument partDocument = XDocument.Parse(xmlString);
+            XElement r1 = partDocument.Descendants(W.r).First();
+            string innerText1 = UnicodeMapper.RunToString(r1);
+            XElement r2 = partDocument.Descendants(W.r).Last();
+            string innerText2 = UnicodeMapper.RunToString(r2);
+            Assert.Equal(expect1, innerText1);
+            Assert.Equal(expect2, innerText2);
+        }
+
+        private const string PreserveSpacingMultiLineXmlString = @"<w:document xmlns:w=""http://schemas.openxmlformats.org/wordprocessingml/2006/main""><w:body>"
+            + @"<w:p><w:r><w:t>XXX</w:t></w:r></w:p>"
+            + @"<w:p><w:r><w:t xml:space=""preserve"">XXX</w:t></w:r></w:p>"
+            + @"</w:body></w:document>";
+
+        [Fact]
+        public void HonorsNonBreakingWhitespace()
+        {
+            XDocument partDocument = XDocument.Parse(SignificantWhitespaceXmlString);
+            XElement p = partDocument.Descendants(W.p).Last();
+            string innerText = p.Descendants(W.r)
+                .Select(UnicodeMapper.RunToString)
+                .StringConcatenate();
+            Assert.Equal(@"Regular spaces:Mixed non-breaking spaces:     ", innerText);
+            // all regular spaces are trimmed. non-breaking spaces are not.
+            // trailing spaces after the colon are: sp nbsp nbsp sp nbsp
+            // (trailing space was trimmed)
+        }
+
+        private const string SignificantWhitespaceXmlString =
+@"<w:document xmlns:w=""http://schemas.openxmlformats.org/wordprocessingml/2006/main"">
+  <w:body>
+    <w:p>
+      <w:r><w:t> Regular spaces:      </w:t></w:r>
+      <w:r><w:t> Mixed non-breaking spaces:      </w:t></w:r>
+    </w:p>
+  </w:body>
+</w:document>";
     }
 }
 

@@ -139,11 +139,13 @@ namespace OpenXmlPowerTools
         /// allow to be edited.</returns>
         private static string IgnoreTextSpacing(string text)
         {
-            // all whitespace at beginning and end of entire string is ignored
-            // if text contains line breaks, they are ignored/replaced with a single space
-            return string.Join(" ",
-                text.Split(new char[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries)
-            ).Trim();
+            // If text contains line breaks (as it MAY if there are line breaks
+            // in the w:t content), Word replaces those with a single space.
+            return string
+                .Join(" ", text.Split(LineFeed)) // XML parsing already normalized to LF
+                .Trim(' ', HorizontalTabulation); // ignore leading & trailing spaces/tabs
+            // Trim() must be given explicit characters to remove; otherwise it eliminates
+            // SIGNIFICANT whitespace as well (such as non-breaking spaces).
         }
 
         /// <summary>
