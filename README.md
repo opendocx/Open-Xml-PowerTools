@@ -1,11 +1,10 @@
-﻿NuGet Feed for CI build: https://ci.appveyor.com/nuget/open-xml-powertools
+﻿NuGet: https://www.nuget.org/packages/OpenXmlPowerTools-Net6/
 
 News
 ====
-Welcome, Open-Xml-PowerTools users.  As you may have learned from the repo at OfficeDev/Open-Xml-PowerTools,
-Microsoft is going to archive that repo, and will not be maintaining that repo in the future.
-
-Eric White
+Welcome, Open-Xml-PowerTools users. This is the OpenDocx fork of Open-Xml-PowerTools.
+Please refer to the [documentation](https://github.com/opendocx/Open-Xml-PowerTools/blob/inserts/docs/index.md)
+to see what is unique about this fork.
 
 Open-XML-PowerTools
 ===================
