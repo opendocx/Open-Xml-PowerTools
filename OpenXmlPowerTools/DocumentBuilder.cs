@@ -578,6 +578,12 @@ namespace OpenXmlPowerTools
                                             .Take(source.Count)
                                             .ToList();
 
+                                        // The insertion process mutates the content (e.g., relationship ids, unique ids).
+                                        // If the same source content is inserted into multiple header/footer parts in a
+                                        // single pass, we must clone the content per insertion to avoid corrupting the
+                                        // source relationship ids for subsequent insertions.
+                                        contents = contents.Select(e => new XElement(e)).ToList();
+
                                         try
                                         {
                                             AppendDocument(doc, output, part, contents, source.KeepSections, source.InsertId, images);
@@ -3195,6 +3201,7 @@ application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml
                 {
                     ExternalRelationship newEr = newContentPart.AddExternalRelationship(er.RelationshipType, er.Uri);
                     imageReference.Attribute(R.id).Value = newEr.Id;
+                    return;
                 }
                 throw new DocumentBuilderInternalException("Source {0} is unsupported document - contains reference to NULL image");
             }

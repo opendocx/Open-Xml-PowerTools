@@ -281,6 +281,25 @@ namespace OxPt
             Assert.Equal("Cheryl's bulleted item!", para2Text);
         }
 
+        [Fact]
+        public async void DC011_DocumentComposerInsertImageIntoMultipleHeaders()
+        {
+            // TODO: add an optional KeepSections attribute to the DocumentAssembler's Insert element
+            //       Until then, we have to specify sources manually to get KeepSections!
+            string template = "DC-LetterMultipleHeaders.docx";
+            string data = null;
+            var sourceArray = new TestSource[]
+            {
+                new TestSource()
+                {
+                    DocumentFile = "DC-Letterhead.docx",
+                    InsertId = "DC-Letterhead.docx", // this identifier is in an <Insert> element in the template
+                    KeepSections = true,
+                },
+            };
+            await DoInsertTest(template, data, sourceArray, "DC004b_DocumentComposerInsertAutoStatic2Images_composed.docx");
+        }
+
         private static readonly List<string> s_BuilderExpectedErrors = new()
         {
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:evenHBand' attribute is not declared.",
