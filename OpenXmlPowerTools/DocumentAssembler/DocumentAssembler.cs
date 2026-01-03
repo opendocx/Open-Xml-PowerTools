@@ -875,9 +875,15 @@ namespace OpenXmlPowerTools
                     }
                     return null;
                 }
+                var transformedNodes = element.Nodes().Select(n => ContentReplacementTransform(n, data, templateError, owningPart));
+                if (element.Name == W.tc && transformedNodes.All(n => n == null || (n is XElement && (n as XElement).Name == W.tcPr)))
+                {
+                    // avoid empty table cells, which are invalid -- add an empty paragraph back in
+                    transformedNodes = transformedNodes.Concat(new XNode[] { new XElement(W.p) });
+                }
                 return new XElement(element.Name,
                     element.Attributes(),
-                    element.Nodes().Select(n => ContentReplacementTransform(n, data, templateError, owningPart)));
+                    transformedNodes);
             }
             return node;
         }
