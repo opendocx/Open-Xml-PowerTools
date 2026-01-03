@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     #region Input File Support
 

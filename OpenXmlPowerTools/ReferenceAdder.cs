@@ -6,7 +6,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.XPath;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public partial class WmlDocument : OpenXmlPowerToolsDocument
     {

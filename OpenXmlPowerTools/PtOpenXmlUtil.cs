@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools.FontMetric;
+﻿using OpenXmlPowerTools.FontMetric;
 using DocumentFormat.OpenXml.Packaging;
 using SkiaSharp;
 using System;
@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public static class PtOpenXmlExtensions
     {

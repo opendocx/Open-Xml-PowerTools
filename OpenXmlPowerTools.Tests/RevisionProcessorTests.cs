@@ -1,9 +1,9 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
+﻿using OpenXmlPowerTools;
 using System;
 using System.IO;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class RpTests
     {

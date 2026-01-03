@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
+﻿using OpenXmlPowerTools;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using System;
@@ -25,7 +25,7 @@ using Xunit;
  * this module do not require the HtmlAgilityPack to run.
 *******************************************************************************************/
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class HwTests
     {

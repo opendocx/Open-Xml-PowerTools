@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public class HtmlToWmlConverterSettings
     {

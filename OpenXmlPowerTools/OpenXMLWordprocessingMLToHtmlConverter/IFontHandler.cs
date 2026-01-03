@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
+namespace OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
 {
     public interface IFontHandler
     {

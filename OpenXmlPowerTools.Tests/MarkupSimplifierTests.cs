@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
+﻿using OpenXmlPowerTools;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class MarkupSimplifierTests
     {

@@ -1,5 +1,5 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
-using Codeuctivity.OpenXmlPowerTools.DocumentBuilder;
+﻿using OpenXmlPowerTools;
+using OpenXmlPowerTools.DocumentBuilder;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using System;
@@ -10,7 +10,7 @@ using System.Text;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class DbTests
     {

@@ -1,4 +1,4 @@
-﻿namespace Codeuctivity.OpenXmlPowerTools
+﻿namespace OpenXmlPowerTools
 {
     public class ListItemTextGetterRuRU
     {

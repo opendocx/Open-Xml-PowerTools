@@ -1,9 +1,9 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
+﻿using OpenXmlPowerTools;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class ShTests
     {

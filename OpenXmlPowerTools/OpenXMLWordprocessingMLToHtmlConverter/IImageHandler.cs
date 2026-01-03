@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
+namespace OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
 {
     /// <summary>
     /// Implement an imageHandler to get image support in HTML

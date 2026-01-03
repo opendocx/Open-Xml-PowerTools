@@ -1,4 +1,4 @@
-﻿namespace Codeuctivity.OpenXmlPowerTools
+﻿namespace OpenXmlPowerTools
 {
     public class ListItemTextGetter_tr_TR
     {

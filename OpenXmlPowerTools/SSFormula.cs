@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public class ParseFormula
     {

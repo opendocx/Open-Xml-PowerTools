@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools.FontMetric;
+﻿using OpenXmlPowerTools.FontMetric;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using SkiaSharp;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public class MetricsGetterSettings
     {

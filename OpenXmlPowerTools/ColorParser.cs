@@ -2,7 +2,7 @@ using SkiaSharp;
 using System;
 using System.Drawing;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public static class ColorParser
     {

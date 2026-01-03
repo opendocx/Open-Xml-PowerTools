@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
+namespace OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
 {    /// <summary>
      /// Handler that transforms every symbol from w:sym
      /// </summary>

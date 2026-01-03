@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools.Chart;
+﻿using OpenXmlPowerTools.Chart;
 using DocumentFormat.OpenXml.Packaging;
 using System;
 using System.IO;

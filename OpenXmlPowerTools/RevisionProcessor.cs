@@ -1,11 +1,11 @@
-﻿using Codeuctivity.OpenXmlPowerTools.Exceptions;
+﻿using OpenXmlPowerTools.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     internal class ReverseRevisionsInfo
     {

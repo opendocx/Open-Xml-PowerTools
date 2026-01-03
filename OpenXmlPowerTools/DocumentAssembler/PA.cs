@@ -1,6 +1,6 @@
 ﻿using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public partial class DocumentAssembler
     {

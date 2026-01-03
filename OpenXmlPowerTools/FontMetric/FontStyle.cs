@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Codeuctivity.OpenXmlPowerTools.FontMetric
+namespace OpenXmlPowerTools.FontMetric
 {
     [Flags]
     public enum FontStyle

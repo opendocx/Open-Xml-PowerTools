@@ -1,4 +1,4 @@
-using Codeuctivity.OpenXmlPowerTools;
+using OpenXmlPowerTools;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class PowerToolsBlockExtensionsTests : TestsBase
     {

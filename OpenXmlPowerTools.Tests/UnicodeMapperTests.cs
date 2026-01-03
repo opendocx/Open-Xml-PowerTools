@@ -1,9 +1,9 @@
-using Codeuctivity.OpenXmlPowerTools;
+using OpenXmlPowerTools;
 using System.Linq;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class UnicodeMapperTests
     {

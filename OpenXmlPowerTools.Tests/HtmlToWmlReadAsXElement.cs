@@ -26,7 +26,7 @@ using System.Xml.Linq;
 using HtmlAgilityPack;
 #endif
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class HtmlToWmlReadAsXElement
     {

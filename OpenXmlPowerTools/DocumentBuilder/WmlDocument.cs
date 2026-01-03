@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public partial class WmlDocument : OpenXmlPowerToolsDocument
     {

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools.Chart
+namespace OpenXmlPowerTools.Chart
 {
     public class ChartUpdater
     {

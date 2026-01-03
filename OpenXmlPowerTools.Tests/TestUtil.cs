@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class TestUtil
     {

@@ -1,5 +1,5 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
-using Codeuctivity.OpenXmlPowerTools.DocumentBuilder;
+﻿using OpenXmlPowerTools;
+using OpenXmlPowerTools.DocumentBuilder;
 using System;
 using System.IO;
 using System.Linq;

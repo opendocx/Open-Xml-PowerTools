@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
+namespace OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
 {
     /// <summary>
     /// Is a handler that does not temper with value in W.t elements

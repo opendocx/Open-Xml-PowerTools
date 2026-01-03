@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
+﻿using OpenXmlPowerTools;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Validation;
@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using Xunit;
 using System.Globalization;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     public class DaTests
     {

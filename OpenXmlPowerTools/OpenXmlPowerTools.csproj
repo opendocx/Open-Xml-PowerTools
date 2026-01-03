@@ -3,10 +3,10 @@
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<RepositoryUrl>https://github.com/Codeuctivity/OpenXmlPowerTools</RepositoryUrl>
+		<RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools</RepositoryUrl>
 		<PackageTags>OpenXML DOCX Word XLSX Excel PPTX Powerpoint</PackageTags>
-		<Authors>Stefan Seeland</Authors>
-		<Company>Codeuctivity</Company>
+		<Authors>Lowell Stewart</Authors>
+		<Company>OpenDocx</Company>
 		<Version Condition="'$(CURRENT_VERSION)' != ''">$(CURRENT_VERSION)</Version>
 		<Version Condition="'$(CURRENT_VERSION)' == ''">0.0.1</Version>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
@@ -14,7 +14,7 @@
 		<PackageVersion>$(Version)</PackageVersion>
 		<PackageReleaseNotes>$(LAST_COMMIT_MESSAGE)</PackageReleaseNotes>
 		<PackageIcon>NugetIcon.png</PackageIcon>
-		<PackageProjectUrl>https://github.com/Codeuctivity/OpenXmlPowerTools</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
 		<Description>The Open XML SDK provides tools for working with Office Word, Excel, and PowerPoint documents. This fork supports current .net versions.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<AssemblyOriginatorKeyFile>OpenXmlPowerTools.snk</AssemblyOriginatorKeyFile>
@@ -25,11 +25,11 @@
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<Nullable>enable</Nullable>
 		<LangVersion>8.0</LangVersion>
-		<RootNamespace>Codeuctivity.OpenXmlPowerTools</RootNamespace>
+		<RootNamespace>OpenXmlPowerTools</RootNamespace>
 		<NeutralLanguage>en</NeutralLanguage>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
-		<PackageId>Codeuctivity.OpenXmlPowerTools</PackageId>
-		<AssemblyName>Codeuctivity.OpenXmlPowerTools</AssemblyName>
+		<PackageId>OpenXmlPowerTools</PackageId>
+		<AssemblyName>OpenXmlPowerTools</AssemblyName>
 		<PackageReadmeFile>nugetReadme.md</PackageReadmeFile>
 		<ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
 	</PropertyGroup>

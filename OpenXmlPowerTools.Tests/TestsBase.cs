@@ -3,7 +3,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.IO;
 
-namespace Codeuctivity.Tests
+namespace OxPt
 {
     /// <summary>
     /// Base class for unit tests providing utility methods.

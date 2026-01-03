@@ -1,5 +1,5 @@
-﻿using Codeuctivity.OpenXmlPowerTools;
-using Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter;
+﻿using OpenXmlPowerTools;
+using OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter;
 using Codeuctivity.SkiaSharpCompare;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Xml.Linq;
 using Xunit;
 
-namespace Codeuctivity.Tests.OpenXMLWordProcessingMLToHtmlConverter
+namespace OxPt.OpenXMLWordProcessingMLToHtmlConverter
 {
     public class WmlToHtmlConverterHandlerTests
     {

@@ -93,7 +93,7 @@
 // then need to make sure that all of the cells below the caption have the border on the appropriate sides so that it looks as if the table
 // has a border.
 
-using Codeuctivity.OpenXmlPowerTools.FontMetric;
+using OpenXmlPowerTools.FontMetric;
 using DocumentFormat.OpenXml.Packaging;
 using SkiaSharp;
 using System;
@@ -103,7 +103,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public class ElementToStyleMap
     {

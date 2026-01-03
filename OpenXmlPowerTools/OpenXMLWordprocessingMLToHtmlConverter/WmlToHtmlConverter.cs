@@ -1,4 +1,4 @@
-﻿using Codeuctivity.OpenXmlPowerTools.FontMetric;
+﻿using OpenXmlPowerTools.FontMetric;
 using DocumentFormat.OpenXml.Packaging;
 using SkiaSharp;
 using System;
@@ -12,7 +12,7 @@ using System.Xml.Linq;
 // Content-Language: en-US
 // Content-Language: fr-FR
 
-namespace Codeuctivity.OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
+namespace OpenXmlPowerTools.OpenXMLWordprocessingMLToHtmlConverter
 {
     /// <summary>
     /// Converts a wordDoc to a self contained HTML

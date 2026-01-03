@@ -1,8 +1,8 @@
-﻿using Codeuctivity.OpenXmlPowerTools.Exceptions;
+﻿using OpenXmlPowerTools.Exceptions;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
 
-namespace Codeuctivity.OpenXmlPowerTools
+namespace OpenXmlPowerTools
 {
     public partial class PmlDocument : OpenXmlPowerToolsDocument
     {
