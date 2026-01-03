@@ -491,11 +491,9 @@ namespace OpenXmlPowerTools
             public string? SchemaValidationMessage;
         }
 
-        private static string? ValidatePerSchema(XElement element)
+        private static Dictionary<XName, PASchemaSet> InitializePASchemaSet()
         {
-            if (s_PASchemaSets == null)
-            {
-                s_PASchemaSets = new Dictionary<XName, PASchemaSet>()
+            var schemaSet = new Dictionary<XName, PASchemaSet>()
                 {
                     {
                         PA.Content,
@@ -591,14 +589,18 @@ namespace OpenXmlPowerTools
                         }
                     },
                 };
-                foreach (var item in s_PASchemaSets)
+            foreach (var item in schemaSet)
                 {
                     var itemPAss = item.Value;
                     var schemas = new XmlSchemaSet();
                     schemas.Add("", XmlReader.Create(new StringReader(itemPAss.XsdMarkup)));
                     itemPAss.SchemaSet = schemas;
                 }
+            return schemaSet;
             }
+
+        private static string? ValidatePerSchema(XElement element)
+        {
             if (!s_PASchemaSets.ContainsKey(element.Name))
             {
                 return string.Format("Invalid XML: {0} is not a valid element", element.Name.LocalName);
@@ -621,7 +623,7 @@ namespace OpenXmlPowerTools
             return null;
         }
 
-        private static Dictionary<XName, PASchemaSet> s_PASchemaSets;
+        private static readonly Dictionary<XName, PASchemaSet> s_PASchemaSets = InitializePASchemaSet();
 
         private static object? ContentReplacementTransform(XNode node, XElement data, TemplateError templateError, OpenXmlPart owningPart)
         {
