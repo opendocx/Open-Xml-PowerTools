@@ -2,7 +2,7 @@
 {
     public partial class DocumentAssembler
     {
-        private class TemplateError
+        private class AssembleResult
         {
             public bool HasError;
         }

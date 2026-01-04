@@ -35,7 +35,7 @@ namespace OpenXmlPowerTools
                     throw new OpenXmlPowerToolsException("Invalid DocumentAssembler template - contains tracked revisions");
                 }
 
-                var te = new TemplateError();
+                var te = new AssembleResult();
                 foreach (var part in wordDoc.ContentParts())
                 {
                     ProcessTemplatePart(data, te, part);
@@ -46,7 +46,7 @@ namespace OpenXmlPowerTools
             return assembledDocument;
         }
 
-        private static void ProcessTemplatePart(XElement data, TemplateError te, OpenXmlPart part)
+        private static void ProcessTemplatePart(XElement data, AssembleResult te, OpenXmlPart part)
         {
             var xDoc = part.GetXDocument();
 
@@ -84,7 +84,7 @@ namespace OpenXmlPowerTools
             PA.Table,
         };
 
-        private static object ForceBlockLevelAsAppropriate(XNode node, TemplateError te)
+        private static object ForceBlockLevelAsAppropriate(XNode node, AssembleResult te)
         {
             if (node is XElement element)
             {
@@ -139,7 +139,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static void ProcessOrphanEndRepeatEndConditional(XElement xDocRoot, TemplateError te)
+        private static void ProcessOrphanEndRepeatEndConditional(XElement xDocRoot, AssembleResult te)
         {
             foreach (var element in xDocRoot.Descendants(PA.EndRepeat).ToList())
             {
@@ -199,7 +199,7 @@ namespace OpenXmlPowerTools
         // The following method is written using tree modification, not RPFT, because it is easier to write in this fashion.
         // These types of operations are not as easy to write using RPFT.
         // Unless you are completely clear on the semantics of LINQ to XML DML, do not make modifications to this method.
-        private static void NormalizeTablesRepeatAndConditional(XElement xDoc, TemplateError te)
+        private static void NormalizeTablesRepeatAndConditional(XElement xDoc, AssembleResult te)
         {
             var tables = xDoc.Descendants(PA.Table).ToList();
             foreach (var table in tables)
@@ -309,7 +309,7 @@ namespace OpenXmlPowerTools
             "EndConditional",
         };
 
-        private static object TransformToMetadata(XNode node, XElement data, TemplateError te)
+        private static object TransformToMetadata(XNode node, XElement data, AssembleResult te)
         {
             if (node is XElement element)
             {
@@ -464,7 +464,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static XElement TransformXmlTextToMetadata(TemplateError te, string xmlText)
+        private static XElement TransformXmlTextToMetadata(AssembleResult te, string xmlText)
         {
             XElement xml;
             try
@@ -625,7 +625,7 @@ namespace OpenXmlPowerTools
 
         private static readonly Dictionary<XName, PASchemaSet> s_PASchemaSets = InitializePASchemaSet();
 
-        private static object? ContentReplacementTransform(XNode node, XElement data, TemplateError templateError, OpenXmlPart owningPart)
+        private static object? ContentReplacementTransform(XNode node, XElement data, AssembleResult templateError, OpenXmlPart owningPart)
         {
             if (node is XElement element)
             {
@@ -1321,7 +1321,7 @@ namespace OpenXmlPowerTools
         }
 
 
-        private static object CreateContextErrorMessage(XElement element, string errorMessage, TemplateError templateError)
+        private static object CreateContextErrorMessage(XElement element, string errorMessage, AssembleResult templateError)
         {
             var para = element.Descendants(W.p).FirstOrDefault();
             var errorRun = CreateRunErrorMessage(errorMessage, templateError);
@@ -1335,7 +1335,7 @@ namespace OpenXmlPowerTools
             }
         }
 
-        private static XElement CreateRunErrorMessage(string errorMessage, TemplateError templateError)
+        private static XElement CreateRunErrorMessage(string errorMessage, AssembleResult templateError)
         {
             templateError.HasError = true;
             var errorRun = new XElement(W.r,
@@ -1346,7 +1346,7 @@ namespace OpenXmlPowerTools
             return errorRun;
         }
 
-        private static XElement CreateParaErrorMessage(string errorMessage, TemplateError templateError)
+        private static XElement CreateParaErrorMessage(string errorMessage, AssembleResult templateError)
         {
             templateError.HasError = true;
             var errorPara = new XElement(W.p,
