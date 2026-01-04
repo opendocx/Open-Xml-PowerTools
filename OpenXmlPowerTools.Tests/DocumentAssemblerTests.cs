@@ -221,6 +221,43 @@ namespace OxPt
             Assert.Equal(err, returnedTemplateError);
         }
 
+        [Theory]
+        [InlineData("DA267-xmlerror.docx", "DA267-xmlerror.xml", true)]
+        public void DA267_XmlError(string name, string data, bool expectError)
+        {
+            // this test docx template is invalid -- the footer, which contains fields with markup,
+            // is itself wrapped in an invisible content control that should not be there.
+            // Since that invisible outer content control contains formatted text and other content controls,
+            // instead of containing actual XML, an error is thrown when we try to parse that content as xml.
+            // This XML error is embedded in a run where the error occurred.
+
+            DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
+            FileInfo templateDocx = new FileInfo(Path.Combine(sourceDir.FullName, name));
+            FileInfo dataFile = new FileInfo(Path.Combine(sourceDir.FullName, data));
+
+            WmlDocument wmlTemplate = new WmlDocument(templateDocx.FullName);
+            XmlDocument xmldata = new XmlDocument();
+            xmldata.Load(dataFile.FullName);
+
+            bool returnedTemplateError;
+            WmlDocument afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmldata, out returnedTemplateError);
+            var assembledDocx = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, templateDocx.Name.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
+            afterAssembling.SaveAs(assembledDocx.FullName);
+
+            using (MemoryStream ms = new MemoryStream())
+            {
+                ms.Write(afterAssembling.DocumentByteArray, 0, afterAssembling.DocumentByteArray.Length);
+                using (WordprocessingDocument wDoc = WordprocessingDocument.Open(ms, true))
+                {
+                    OpenXmlValidator v = new OpenXmlValidator();
+                    var valErrors = v.Validate(wDoc).Where(ve => !s_ExpectedErrors.Contains(ve.Description));
+                    Assert.Empty(valErrors);
+                }
+            }
+
+            Assert.Equal(expectError, returnedTemplateError);
+        }
+
         [Fact]
         public void AssembleDocument_ImageMetadataCreatesImageParts()
         {
@@ -530,6 +567,23 @@ namespace OxPt
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:noVBand' attribute is not declared.",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddHBand' attribute is not declared.",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddVBand' attribute is not declared.",
+            "The attribute 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:name' has invalid value 'useWord2013TrackBottomHyphenation'. The Enumeration constraint failed.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:allStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:alternateStyleNames' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:clearFormatting' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:customStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnNumbering' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnParagraphs' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnRuns' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:directFormattingOnTables' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:headingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:latentStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:numberingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:stylesInUse' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:tableStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:top3HeadingStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:visibleStyles' attribute is not declared.",
+            "The element has invalid child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:doNotEmbedSmartTags'.",
         };
     }
 }
