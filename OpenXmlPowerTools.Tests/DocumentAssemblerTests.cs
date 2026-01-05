@@ -1,4 +1,5 @@
 ﻿using OpenXmlPowerTools;
+using OpenXmlPowerTools.DocumentBuilder;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Validation;
@@ -256,6 +257,70 @@ namespace OxPt
             }
 
             Assert.Equal(expectError, returnedTemplateError);
+        }
+
+        // tests for "indirect" inserts
+        private void DA300(string nameParent, string nameChild, string data, bool err, bool errChild)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/");
+            FileInfo parentTemplateDocx = new FileInfo(Path.Combine(sourceDir.FullName, nameParent));
+            FileInfo childTemplateDocx = new FileInfo(Path.Combine(sourceDir.FullName, nameChild));
+            FileInfo dataFile = new FileInfo(Path.Combine(sourceDir.FullName, data));
+
+            XElement xmldata = XElement.Load(dataFile.FullName);
+            WmlDocument wmlParentTemplate = new WmlDocument(parentTemplateDocx.FullName);
+            WmlDocument wmlChildTemplate = new WmlDocument(childTemplateDocx.FullName);
+
+            bool returnedChildError;
+            WmlDocument assembledChild = DocumentAssembler.AssembleDocument(wmlChildTemplate, xmldata, out returnedChildError);
+            Assert.Equal(errChild, returnedChildError);
+
+            bool returnedTemplateError;
+            WmlDocument assembledParent = DocumentAssembler.AssembleDocument(wmlParentTemplate, xmldata, out returnedTemplateError);
+            Assert.Equal(err, returnedTemplateError);
+
+            List<Source> sources = new List<Source>()
+            {
+                new Source(assembledParent),
+                new Source(assembledChild, nameChild),
+            };
+            var assembledDocx = new FileInfo(Path.Combine(TestUtil.TempDir.FullName,
+                parentTemplateDocx.Name.Replace(".docx", "-processed-by-DocumentAssembler.docx")
+            ));
+            DocumentBuilder.BuildDocument(sources, assembledDocx.FullName);
+
+            using (WordprocessingDocument wDoc = WordprocessingDocument.Open(assembledDocx.FullName, true))
+            {
+                OpenXmlValidator v = new OpenXmlValidator();
+                var valErrors = v.Validate(wDoc).Where(ve => !s_BuilderExpectedErrors.Contains(ve.Description));
+                Assert.Empty(valErrors);
+#if false
+                StringBuilder sb = new StringBuilder();
+                foreach (var item in valErrors.Select(r => r.Description).OrderBy(t => t).Distinct())
+                {
+                    sb.Append(item).Append(Environment.NewLine);
+                }
+                string z = sb.ToString();
+                Console.WriteLine(z);
+#endif
+            }
+        }
+
+        [Fact]
+        public void DA301_DocBuilder_Inserts()
+        {
+            var parent = "DA301-Insert.docx";
+            var child = "DA301-Inserted.docx";
+            var data = "DA301-Insert.xml";
+            DA300(parent, child, data, false, false);
+            var assembledDocx = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, parent.Replace(".docx", "-processed-by-DocumentAssembler.docx")));
+            WmlDocument afterAssembling = new WmlDocument(assembledDocx.FullName);
+            var mainPart = afterAssembling.MainDocumentPart;
+            var paragraphs = mainPart.Element(W.body).Elements(W.p);
+            string para1Text = paragraphs.First().Value;
+            string para2Text = paragraphs.ElementAt(1).Value;
+            Assert.Equal("This is a parent document, Cheryl.", para1Text);
+            Assert.Equal("Cheryl's bulleted item!", para2Text);
         }
 
         [Fact]
@@ -584,6 +649,37 @@ namespace OxPt
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:top3HeadingStyles' attribute is not declared.",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:visibleStyles' attribute is not declared.",
             "The element has invalid child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:doNotEmbedSmartTags'.",
+        };
+
+        private static List<string> s_BuilderExpectedErrors = new List<string>()
+        {
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:evenHBand' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:evenVBand' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:firstColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:firstRow' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:firstRowFirstColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:firstRowLastColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:lastColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:lastRow' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:lastRowFirstColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:lastRowLastColumn' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:noHBand' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:noVBand' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddHBand' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:oddVBand' attribute is not declared.",
+            "The element has unexpected child element 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:updateFields'.",
+            "The attribute 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:name' has invalid value 'useWord2013TrackBottomHyphenation'. The Enumeration constraint failed.",
+            "The 'http://schemas.microsoft.com/office/word/2012/wordml:restartNumberingAfterBreak' attribute is not declared.",
+            "Attribute 'id' should have unique value. Its current value '",
+            "The 'urn:schemas-microsoft-com:mac:vml:blur' attribute is not declared.",
+            "Attribute 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:id' should have unique value. Its current value '",
+            "The element has unexpected child element 'http://schemas.microsoft.com/office/word/2012/wordml:",
+            "The element has invalid child element 'http://schemas.microsoft.com/office/word/2012/wordml:",
+            "The 'urn:schemas-microsoft-com:mac:vml:complextextbox' attribute is not declared.",
+            "http://schemas.microsoft.com/office/word/2010/wordml:",
+            "http://schemas.microsoft.com/office/word/2008/9/12/wordml:",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:allStyles' attribute is not declared.",
+            "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:customStyles' attribute is not declared.",
         };
     }
 }
