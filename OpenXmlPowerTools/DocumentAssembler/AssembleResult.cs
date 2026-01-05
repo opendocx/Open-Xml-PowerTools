@@ -1,10 +1,13 @@
-﻿namespace OpenXmlPowerTools
+﻿using System.Collections.Generic;
+
+namespace OpenXmlPowerTools
 {
     public partial class DocumentAssembler
     {
-        private class AssembleResult
+        internal class AssembleResult
         {
             public bool HasError;
+            public List<AssembleInsert> Inserts = new List<AssembleInsert>();
         }
     }
 }

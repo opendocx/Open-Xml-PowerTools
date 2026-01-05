@@ -13,6 +13,7 @@ namespace OpenXmlPowerTools
             public static readonly XName EndRepeat = "EndRepeat";
             public static readonly XName Conditional = "Conditional";
             public static readonly XName EndConditional = "EndConditional";
+            public static readonly XName Insert = "Insert";
             public static readonly XName Select = "Select";
             public static readonly XName Optional = "Optional";
             public static readonly XName Align = "Align";
@@ -23,6 +24,7 @@ namespace OpenXmlPowerTools
             public static readonly XName Match = "Match";
             public static readonly XName NotMatch = "NotMatch";
             public static readonly XName Depth = "Depth";
+            public static readonly XName Id = "Id";
         }
     }
 }

@@ -1,37 +1,46 @@
 ﻿# OpenXmlPowerTools
 
-[![.NET build and test](https://github.com/Codeuctivity/OpenXmlPowerTools/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Codeuctivity/OpenXmlPowerTools/actions/workflows/dotnet.yml) [![Nuget](https://img.shields.io/nuget/v/Codeuctivity.OpenXmlPowerTools.svg)](https://www.nuget.org/packages/Codeuctivity.OpenXmlPowerTools/) 
+[![.NET build and test](https://github.com/opendocx/Open-Xml-PowerTools/actions/workflows/dotnet.yml/badge.svg)](https://github.com/opendocx/Open-Xml-PowerTools/actions/workflows/dotnet.yml)
 
 ## Focus of this fork
 
-- Linux, Windows and MacOs support was added by this fork
-- Conversion of DOCX to HTML/CSS
+- DocumentAssembler (Populating content in template DOCX files with data from XML)
+- DocumentBuilder (Combining multiple DOCX files into a single file)
+- DocumentComposer (this fork's primary contribution: integrates/wraps DocumentAssembler AND DocumentBuilder)
+- focus on fixing broad range of bugs as flushed out by very diverse DOCX content
+- Linux, Windows and macOS support as added by upstream (Codeuctivity)
 
-## Known missing features - Conversion of DOCX to HTML/CSS
+Note on naming: this repository name still uses the historical hyphenated form (Open-Xml-PowerTools), while the
+Codeuctivity fork and the .NET package/namespace use OpenXmlPowerTools. This fork is expected to drop the hyphens
+in the repo name in a future rename.
 
-- [floating settings of images are ignored](https://stackoverflow.com/questions/70277539/how-to-handle-floating-images-in-openxml-and-convert-to-html-equivalent/73639409#73639409)
-- [W.oMath](https://github.com/Codeuctivity/OpenXmlToHtml/issues/74)
-- many more
+See [docs/index.md](docs/index.md) for details.
 
+## Quick start
 
-## Example - Convert DOCX to HTML
+Use `DocumentComposer` when you want DocumentAssembler-style templates *and* document insertion/concatenation in one pipeline:
 
-``` csharp
-var sourceDocxFileContent = File.ReadAllBytes("./source.docx");
-using var memoryStream = new MemoryStream();
-await memoryStream.WriteAsync(sourceDocxFileContent, 0, sourceDocxFileContent.Length);
-using var wordProcessingDocument = WordprocessingDocument.Open(memoryStream, true);
-var settings = new WmlToHtmlConverterSettings("htmlPageTitle");
-var html = WmlToHtmlConverter.ConvertToHtml(wordProcessingDocument, settings);
-var htmlString = html.ToString(SaveOptions.DisableFormatting);
-File.WriteAllText("./target.html", htmlString, Encoding.UTF8);
+```csharp
+using OpenXmlPowerTools;
+using System.Xml.Linq;
+
+var template = new WmlDocument("path/to/ParentTemplate.docx");
+var data = XElement.Load("path/to/data.xml");
+
+var result = await DocumentComposer.ComposeDocument(template, data);
+result.SaveAs("path/to/output.docx");
 ```
+
+## When to use what
+
+- `DocumentAssembler`: You have a Word-editable DOCX template containing placeholders, and you want to populate it from XML.
+- `DocumentBuilder`: You want programmatic composition (insert/merge/concatenate) of multiple DOCX files.
+- `DocumentComposer`: You want to combine DocumentAssembler + DocumentBuilder, i.e. when templates need to dynamically insert additional DOCX content.
 
 ### Other features
 
 - Splitting DOCX/PPTX files into multiple files.
-- Combining multiple DOCX files into a single file.
-- Populating content in template DOCX files with data from XML.
+- Conversion of DOCX to HTML/CSS.
 - Conversion of HTML/CSS to DOCX.
 - Searching and replacing content in DOCX/PPTX using regular expressions.
 - Managing tracked-revisions, including detecting tracked revisions, and accepting tracked revisions.

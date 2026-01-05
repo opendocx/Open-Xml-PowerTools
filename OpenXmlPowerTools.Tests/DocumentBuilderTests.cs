@@ -613,6 +613,69 @@ namespace OxPt
         }
 
         [Theory]
+        [InlineData("DB020_01_main1_y_ins1_n", "DB020-Main-1Sect.docx", true, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_02_main1_n_ins1_n", "DB020-Main-1Sect.docx", false, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_03_main1_y_ins1_y", "DB020-Main-1Sect.docx", true, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_04_main1_n_ins1_y", "DB020-Main-1Sect.docx", false, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_05_main1_y_ins2_n", "DB020-Main-1Sect.docx", true, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_06_main1_n_ins2_n", "DB020-Main-1Sect.docx", false, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_07_main1_y_ins2_y", "DB020-Main-1Sect.docx", true, 8, "DB020-Inserted-2Sects.docx", true)]
+        [InlineData("DB020_08_main1_n_ins2_y", "DB020-Main-1Sect.docx", false, 8, "DB020-Inserted-2Sects.docx", true)]
+        [InlineData("DB020_09_main2_y_ins1_n", "DB020-Main-2Sects-Unlinked.docx", true, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_10_main2_n_ins1_n", "DB020-Main-2Sects-Unlinked.docx", false, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_11_main2_y_ins1_y", "DB020-Main-2Sects-Unlinked.docx", true, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_12_main2_n_ins1_y", "DB020-Main-2Sects-Unlinked.docx", false, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_13_main2_y_ins2_n", "DB020-Main-2Sects-Unlinked.docx", true, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_14_main2_n_ins2_n", "DB020-Main-2Sects-Unlinked.docx", false, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_15_main2_y_ins2_y", "DB020-Main-2Sects-Unlinked.docx", true, 8, "DB020-Inserted-2Sects.docx", true)]
+        [InlineData("DB020_16_main2_n_ins2_y", "DB020-Main-2Sects-Unlinked.docx", false, 8, "DB020-Inserted-2Sects.docx", true)]
+        [InlineData("DB020_17_main2L_y_ins1_n", "DB020-Main-2Sects-Linked.docx", true, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_18_main2L_n_ins1_n", "DB020-Main-2Sects-Linked.docx", false, 8, "DB020-Inserted-1Sect.docx", false)]
+        [InlineData("DB020_19_main2L_y_ins1_y", "DB020-Main-2Sects-Linked.docx", true, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_20_main2L_n_ins1_y", "DB020-Main-2Sects-Linked.docx", false, 8, "DB020-Inserted-1Sect.docx", true)]
+        [InlineData("DB020_21_main2L_y_ins2_n", "DB020-Main-2Sects-Linked.docx", true, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_22_main2L_n_ins2_n", "DB020-Main-2Sects-Linked.docx", false, 8, "DB020-Inserted-2Sects.docx", false)]
+        [InlineData("DB020_23_main2L_y_ins2_y", "DB020-Main-2Sects-Linked.docx", true, 8, "DB020-Inserted-2Sects.docx", true)]
+        [InlineData("DB020_24_main2L_n_ins2_y", "DB020-Main-2Sects-Linked.docx", false, 8, "DB020-Inserted-2Sects.docx", true)]
+        public void DB020_InsertXKeepSections(string testId, string mainFile, bool mainKeepSections, int insertLoc, string insertFile, bool insertKeepSections)
+        {
+            DirectoryInfo sourceDir = new DirectoryInfo("../../../../TestFiles/DB/");
+            FileInfo main = new FileInfo(Path.Combine(sourceDir.FullName, mainFile));
+            FileInfo insert01 = new FileInfo(Path.Combine(sourceDir.FullName, insertFile));
+
+            WmlDocument doc1 = new WmlDocument(main.FullName);
+            using (MemoryStream mem = new MemoryStream())
+            {
+                mem.Write(doc1.DocumentByteArray, 0, doc1.DocumentByteArray.Length);
+                using (WordprocessingDocument doc = WordprocessingDocument.Open(mem, true))
+                {
+                    XDocument xDoc = doc.MainDocumentPart.GetXDocument();
+                    XElement insertPara = xDoc.Root.Element(W.body).Elements(W.p).Skip(insertLoc - 1).First();
+                    insertPara.ReplaceWith(
+                        new XElement(PtOpenXml.Insert,
+                            new XAttribute("Id", "Insert")));
+                    doc.MainDocumentPart.PutXDocument();
+                }
+                doc1.DocumentByteArray = mem.ToArray();
+            }
+
+            List<Source> sources = new List<Source>()
+            {
+                new Source(doc1, mainKeepSections),
+                new Source(new WmlDocument(insert01.FullName), "Insert"),
+            };
+            sources[1].KeepSections = insertKeepSections;
+            // will it insert section breaks and manage section properties appropriately?
+            // todo: figure out how best to assert (here) that each case comes out as expected.
+            // for now it just produces a bunch of output docs, which can be inspected
+            // manually (alongside the source templates) to look at the different outcomes
+            // for each parametric variation.
+            var out1 = new FileInfo(Path.Combine(TestUtil.TempDir.FullName, testId + ".docx"));
+            DocumentBuilder.BuildDocument(sources, out1.FullName);
+            Validate(out1);
+        }
+
+        [Theory]
         [InlineData("DB100-00010", "DB/GlossaryDocuments/CellLevelContentControl-built.docx", "DB/GlossaryDocuments/BaseDocument.docx,0,4", "DB/GlossaryDocuments/CellLevelContentControl.docx", "DB/GlossaryDocuments/BaseDocument.docx,4", null, null, null)]
         [InlineData("DB100-00020", "DB/GlossaryDocuments/InlineContentControl-built.docx", "DB/GlossaryDocuments/BaseDocument.docx,0,4", "DB/GlossaryDocuments/InlineContentControl.docx", "DB/GlossaryDocuments/BaseDocument.docx,4", null, null, null)]
         [InlineData("DB100-00030", "DB/GlossaryDocuments/MultilineWithBulletPoints-built.docx", "DB/GlossaryDocuments/BaseDocument.docx,0,4", "DB/GlossaryDocuments/MultilineWithBulletPoints.docx", "DB/GlossaryDocuments/BaseDocument.docx,4", null, null, null)]
@@ -752,6 +815,7 @@ namespace OxPt
             "http://schemas.microsoft.com/office/word/2008/9/12/wordml:",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:allStyles' attribute is not declared.",
             "The 'http://schemas.openxmlformats.org/wordprocessingml/2006/main:customStyles' attribute is not declared.",
+            "The 'http://schemas.microsoft.com/office/word/2016/wordml/cid:durableId' attribute is not declared.",
         };
 
         private void ValidateUniqueDocPrIds(FileInfo fi)
