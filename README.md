@@ -1,4 +1,10 @@
-﻿NuGet: https://www.nuget.org/packages/OpenXmlPowerTools-Net6/
+⚠️ This repository has moved!
+
+OpenDocx's fork of OpenXmlPowerTools is now maintained at:
+https://github.com/opendocx/OpenXmlPowerTools
+
+This repo is archived and no longer maintained.
+
 
 News
 ====
